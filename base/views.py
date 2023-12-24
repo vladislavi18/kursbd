@@ -1,10 +1,10 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.views.generic.list import ListView
 from django.views.generic.detail import DetailView
 from django.views.generic.edit import CreateView, UpdateView, DeleteView, FormView
 from django.urls import reverse_lazy
 from django.contrib.auth.views import LoginView
-from .models import Task
+from .models import Task, GroupTasks, Board
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth import login
@@ -41,6 +41,11 @@ class TaskList(LoginRequiredMixin, ListView):
     model = Task
     context_object_name = 'tasks'
 
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['group_tasks'] = GroupTasks.objects.get(id=self.kwargs['group_tasks_id'])
+        return kwargs
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['tasks'] = context['tasks'].filter(user=self.request.user)
@@ -49,6 +54,41 @@ class TaskList(LoginRequiredMixin, ListView):
         search_input = self.request.GET.get('search-area') or ''
         if search_input:
             context['tasks'] = context['tasks'].filter(title__icontains=search_input)
+
+        context['search_input'] = search_input
+        return context
+
+
+class GroupTaskList(LoginRequiredMixin, ListView):
+    model = GroupTasks
+    context_object_name = 'gtasks'
+    template_name = 'base/group_tasks.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['gtasks'] = context['gtasks'].filter(user=self.request.user)
+        context['count'] = context['gtasks'].count()
+
+        search_input = self.request.GET.get('search-area') or ''
+        if search_input:
+            context['gtasks'] = context['gtasks'].filter(title__icontains=search_input)
+
+        context['search_input'] = search_input
+        return context
+
+
+class BoardList(LoginRequiredMixin, ListView):
+    model = Board
+    context_object_name = 'boards'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['boards'] = context['boards'].filter(user=self.request.user)
+        context['count'] = context['boards'].filter(complete=False).count()
+
+        search_input = self.request.GET.get('search-area') or ''
+        if search_input:
+            context['boards'] = context['boards'].filter(title__icontains=search_input)
 
         context['search_input'] = search_input
         return context
@@ -80,3 +120,36 @@ class TaskDelete(LoginRequiredMixin, DeleteView):
     model = Task
     context_object_name = 'task'
     success_url = reverse_lazy('tasks')
+
+
+class GroupTaskCreate(LoginRequiredMixin, CreateView):
+    model = GroupTasks
+    fields = ['title']
+    success_url = reverse_lazy('gtasks')
+
+    def form_valid(self, form):
+        form.instance.user = self.request.user
+        return super(GroupTaskCreate, self).form_valid(form)
+
+
+class GroupTaskUpdate(LoginRequiredMixin, UpdateView):
+    model = GroupTasks
+    fields = ['title']
+    success_url = reverse_lazy('gtasks')
+
+
+class GroupTaskDelete(LoginRequiredMixin, DeleteView):
+    model = GroupTasks
+    context_object_name = 'gtask'
+    success_url = reverse_lazy('gtasks')
+
+# class GroupTaskDelete(LoginRequiredMixin, DeleteView):
+#     model = GroupTasks
+#     context_object_name = 'gtask'
+#     success_url = reverse_lazy('gtasks')
+#
+#     def delete(self, request, args, kwargs):
+#         group_task = self.get_object()
+#         tasks_to_delete = Task.objects.filter(group=group_task)
+#         tasks_to_delete.delete()
+#         return super().delete(request, args, kwargs)
