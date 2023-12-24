@@ -8,46 +8,53 @@
     </div>
 
     {% if request.user.is_authenticated %}
-        <a href="{% url 'logout' %}">Logout</a>
+    <a href="{% url 'logout' %}">Logout</a>
     {% else %}
-        <a href="{% url 'login' %}">Login</a>
+    <a href="{% url 'login' %}">Login</a>
     {% endif %}
 </div>
 
-
-<div id="search-add-wrapper">
-    <form method="GET" style="margin-top: 20px; display: flex;">
-        <input type="text" name="search-area" value="{{search_input}}">
-        <input class="button" type="submit" value="Search">
-    </form>
-    <a id="add-link" href="{% url 'task-create' %}">&#x2b;</a>
+<div class="search-add-wrapper">
+    <div>
+        <div style="margin-top: 20px; display: flex;">
+            <h4 >Поиск по всем задачам</h4>
+            <h4 style="margin-left: 20px;">Поиск по группе задач</h4>
+        </div>
+        <form method="GET" style="display: flex;">
+            <input type="text" name="search-area-1" value="{{search_input_1}}">
+            <input type="text1" name="search-area-2" value="{{search_input_2}}">
+            <input class="button" type="submit" value="Search">
+        </form>
+        <a id="add-link1" href="{% url 'task-create' %}">Создать запись</a>
+        <a id="add-link2" href="{% url 'gtask-create' %}">Создать группу задач</a>
+    </div>
 </div>
 
 <div class="task-items-wrapper">
     {% for task in tasks %}
-        <div class="task-wrapper">
-            {% if task.complete %}
-                <div class="task-title">
-                    <div class="task-complete-icon"></div>
-                    <i><s><a href="{% url 'task-update' task.id %}">{{task}}</a></s></i>
-                    <div style="margin-left: 15px;">Дата выполнения: {{task.date}}</div>
-                </div>
-
-            <a class="delete-link" href="{% url 'task-delete' task.id %}">&#215;</a>
-            {% else %}
-                <div class="task-title">
-                    <div class="task-incomplete-icon"></div>
-                    <a href="{% url 'task-update' task.id %}">{{task}}</a>
-                    <div style="margin-left: 15px;"> Дата выполнения: {{task.date}}</div>
-                </div>
-            <a class="delete-link" href="{% url 'task-delete' task.id %}">&#215;</a>
-            {% endif %}
-
-
+    <div class="task-wrapper">
+        {% if task.complete %}
+        <div class="task-title">
+            <div class="task-complete-icon"></div>
+            <i><s><a href="{% url 'task-update' task.id %}">{{task}}</a></s></i>
+            <div style="margin-left: 15px;">Дата выполнения: {{task.date}}</div>
         </div>
 
+        <a class="delete-link" href="{% url 'task-delete' task.id %}">&#215;</a>
+        {% else %}
+        <div class="task-title">
+            <div class="task-incomplete-icon"></div>
+            <a href="{% url 'task-update' task.id %}">{{task}}</a>
+            <div style="margin-left: 15px;"> Дата выполнения: {{task.date}}</div>
+        </div>
+        <a class="delete-link" href="{% url 'task-delete' task.id %}">&#215;</a>
+        {% endif %}
+
+
+    </div>
+
     {% empty %}
-        <h3>No items in list</h3>
+    <h3>No items in list</h3>
     {% endfor %}
 </div>
 
