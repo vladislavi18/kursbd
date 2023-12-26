@@ -100,9 +100,3 @@ class GroupTaskCreate(LoginRequiredMixin, CreateView):
     def form_valid(self, form):
         form.instance.user = self.request.user
         return super(GroupTaskCreate, self).form_valid(form)
-
-
-class GroupTaskUpdate(LoginRequiredMixin, UpdateView):
-    model = GroupTasks
-    fields = ['title']
-    success_url = reverse_lazy('tasks')
